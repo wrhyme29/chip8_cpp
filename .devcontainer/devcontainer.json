@@ -1,0 +1,17 @@
+{
+    "name": "chip8-cpp",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "matepek.vscode-catch2-test-adapter",
+                "mhutchie.git-graph",
+                "ms-vscode.cpptools-extension-pack",
+                "ms-vscode.cmake-tools"
+            ]
+        }
+    }
+
+}
