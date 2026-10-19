@@ -6,4 +6,6 @@ FetchContent_Declare(
   DOWNLOAD_EXTRACT_TIMESTAMP true
 )
 
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+set(INSTALL_GMOCK OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)

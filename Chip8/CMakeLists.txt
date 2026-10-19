@@ -2,24 +2,29 @@
 #    Chip8 Executable
 ###################################
 
-add_executable(Chip8
+add_executable(chip8
     "src/main.cpp"
 )
 
-add_library(Chip8_Internal STATIC
+add_library(chip8-lib STATIC
     "src/Chip8MemoryMap.h"
     "src/Chip8MemoryMap.cpp"
 )
 
-target_link_libraries(Chip8 Chip8_Internal)
+target_link_libraries(chip8 chip8-lib)
+
+install(
+    TARGETS chip8 
+    RUNTIME DESTINATION bin
+)
 
 
 ###################################
 #    Chip8Test Executable
 ###################################
 
-add_executable(Chip8Test
+add_executable(chip8-test
   "tests/Chip8MemoryMapTests.cpp"
 )
 
-target_link_libraries(Chip8Test Chip8_Internal gtest gtest_main)
+target_link_libraries(chip8-test chip8-lib gtest gtest_main)

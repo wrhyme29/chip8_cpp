@@ -7,6 +7,7 @@ RUN dnf install -y --nogpgcheck \
       gcc-c++-11.5.0-14.el9 \
       git-2.52.0-1.el9 \
       ncurses-6.2-12.20210508.el9 \
+      rpmdevtools-9.5-1.el9 \
       vim-common-2:8.2.2637-26.el9_8.23 && \
     dnf clean all
 ENTRYPOINT ['/bin/bash']
