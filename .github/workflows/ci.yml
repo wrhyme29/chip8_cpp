@@ -2,8 +2,7 @@ name: Build, Test, and Deploy
 
 on:
   push:
-   # TODO - Remove initial memory map before PR 
-    branches: [ "main", "initial-memory-map" ]
+    branches: [ "main"]
   pull_request:
     branches: [ "main" ]
 
