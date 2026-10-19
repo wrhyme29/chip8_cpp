@@ -1,0 +1,87 @@
+name: Build, Test, and Deploy
+
+on:
+  push:
+    branches: [ "main"]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-app:
+    name: Build Chip8 app
+    runs-on: ubuntu-24.04
+
+    env:
+      BUILD_IMAGE_TAG: chip8-builder:${{ github.sha }}
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Docker BuildX
+        id: setup-buildx
+        uses: docker/setup-buildx-action@v4
+        with:
+          driver-opts: network=host
+
+      - name: Build the Container
+        id: build-image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          load: true
+          tags: ${{ env.BUILD_IMAGE_TAG }}
+          file: .devcontainer/Dockerfile
+
+      - name: Build Chip8 and Chip8Test
+        id: build-app
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ${{ env.BUILD_IMAGE_TAG }}
+          options: -v ${{ github.workspace }}:/workspace -w /workspace
+          run: |
+            cmake -DCMAKE_BUILD_TYPE=Release -S . -B build
+            cmake --build build --target all -j 12
+            cmake --build build --target package -j 12
+
+      - name: Upload Chip8 RPM Artifact
+        uses: actions/upload-artifact@v7
+        with:
+         name: chip8-rpm-${{ github.sha }}
+         path: build/chip8-*.rpm
+      
+      - name: Upload Chip8 Test Artifact
+        uses: actions/upload-artifact@v7
+        with:
+         name: chip8-test-${{ github.sha }}
+         path: build/Chip8/chip8-test
+
+  test-app:
+    name: Test Chip8 app
+    runs-on: ubuntu-24.04
+    needs: [ build-app ]
+    steps:
+      # This is needed to have a valid git repo for the test reporter
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v6
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: chip8-test-${{ github.sha }}
+          path: ${{ runner.temp }}
+
+      - name: Run tests
+        run: |
+         chmod +x ${{ runner.temp }}/chip8-test
+         ${{ runner.temp }}/chip8-test --gtest_output=xml:test-results.xml
+
+      - name: Upload Test Report
+        uses: dorny/test-reporter@v3
+        if: ${{ !cancelled() }}       
+        with:
+          name: Chip8 Tests
+          path: test-results.xml
+          reporter: java-junit
