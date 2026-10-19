@@ -75,4 +75,5 @@ jobs:
 
       - name: Run tests
         run: |
+         chmod +x ${{ runner.temp }}/Chip8Test
          ${{ runner.temp }}/Chip8Test
