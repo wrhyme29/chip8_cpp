@@ -5,6 +5,7 @@ RUN dnf install -y --nogpgcheck \
       cmake-3.31.8-3.el9 \
       gcc-11.5.0-14.el9 \
       gcc-c++-11.5.0-14.el9 \
+      gdb-16.3-3.1.el9_8 \
       git-2.52.0-1.el9 \
       ncurses-6.2-12.20210508.el9 \
       rpmdevtools-9.5-1.el9 \
