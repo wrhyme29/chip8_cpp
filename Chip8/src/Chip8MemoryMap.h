@@ -11,6 +11,28 @@ public:
         ETI_PROGRAM_START = 0x600,
         RAM_END = 0xFFF
     };
+
+    struct Registers
+    {
+        uint8_t  V1;
+        uint8_t  V2;
+        uint8_t  V3;
+        uint8_t  V4;
+        uint8_t  V5;
+        uint8_t  V6;
+        uint8_t  V7;
+        uint8_t  V8;
+        uint8_t  V9;
+        uint8_t  VA;
+        uint8_t  VB;
+        uint8_t  VC;
+        uint8_t  VD;
+        uint8_t  VE;
+        uint8_t  VF;
+        uint16_t I;
+        uint8_t  DT;
+        uint8_t  ST;
+    };
     
     explicit Chip8MemoryMap();
     ~Chip8MemoryMap();
@@ -21,6 +43,9 @@ public:
     Chip8MemoryMap& operator=(const Chip8MemoryMap&) = delete;
 
     uint8_t* GetHexSprite(uint8_t hexChar);
+
+    Registers m_registers;
+
 private:
     const uint8_t c_hexSprites[5 * 16] = 
     {
