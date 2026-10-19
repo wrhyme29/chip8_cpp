@@ -1,3 +1,6 @@
+#include <cstddef>
+#include <cstdint>
+
 class Chip8MemoryMap
 {
 public:
@@ -8,6 +11,7 @@ public:
         ETI_PROGRAM_START = 0x600,
         RAM_END = 0xFFF
     };
+    
     explicit Chip8MemoryMap();
     ~Chip8MemoryMap();
 
@@ -16,6 +20,6 @@ public:
     Chip8MemoryMap(const Chip8MemoryMap&) = delete;
     Chip8MemoryMap& operator=(const Chip8MemoryMap&) = delete;
 private:
-    char* m_buffer;
+    uint8_t* m_buffer;
     size_t m_size;
 };
