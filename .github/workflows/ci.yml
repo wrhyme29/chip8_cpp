@@ -76,4 +76,12 @@ jobs:
       - name: Run tests
         run: |
          chmod +x ${{ runner.temp }}/Chip8Test
-         ${{ runner.temp }}/Chip8Test
+         ${{ runner.temp }}/Chip8Test --gtest_output=xml:test-results.xml
+
+      - name: Upload Test Report
+        uses: dorny/test-reporter@v3
+        if: ${{ !cancelled() }}       
+        with:
+          name: Chip8 Tests
+          path: test-results.xml
+          reporter: java-junit
