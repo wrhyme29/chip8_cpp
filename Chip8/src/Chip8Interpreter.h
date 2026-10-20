@@ -1,18 +1,25 @@
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 
-class Chip8MemoryMap
+#define CHIP8_RAM_SIZE_BYTES 4096
+#define CHIP8_HEX_SPRITE_SIZE_BYTES 5
+#define CHIP8_STACK_ADDRESS_COUNT 16
+#define CHIP8_REGISTERS_COUNT 16
+
+class Chip8Interpreter
 {
 public:
-    enum address_boundaries
+    enum address_boundaries : uint16_t
     {
         RAM_START = 0x000, 
         PROGRAM_START = 0x200,
         ETI_PROGRAM_START = 0x600,
+        VARS_DISPLAY_REFRESH = 0xE90,
         RAM_END = 0xFFF
     };
 
-    struct Registers
+    struct SpecialRegisters
     {
         uint8_t  V1;
         uint8_t  V2;
@@ -34,20 +41,25 @@ public:
         uint8_t  ST;
     };
     
-    explicit Chip8MemoryMap();
-    ~Chip8MemoryMap();
+    explicit Chip8Interpreter();
+    ~Chip8Interpreter();
 
     // Disallow copying to prevent multiple Chip8MemoryMaps 
     // from managing the same buffer
-    Chip8MemoryMap(const Chip8MemoryMap&) = delete;
-    Chip8MemoryMap& operator=(const Chip8MemoryMap&) = delete;
+    Chip8Interpreter(const Chip8Interpreter&) = delete;
+    Chip8Interpreter& operator=(const Chip8Interpreter&) = delete;
 
+    void ExecuteProgram(void);
     uint8_t* GetHexSprite(uint8_t hexChar);
-
-    Registers m_registers;
+    void LoadProgramIntoMemory(const uint16_t* program, uint16_t size);
+    uint8_t GetRegistryValue(uint8_t registerName);
+    void SetRegisterI(uint16_t memoryAddress);
 
 private:
-    const uint8_t c_hexSprites[5 * 16] = 
+    void LoadProgramIntoMemory(const uint8_t* program, uint16_t size, uint16_t startMemoryAddress);
+
+
+    const uint8_t c_hexSprites[CHIP8_HEX_SPRITE_SIZE_BYTES * 16] = 
     {
         0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
         0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -66,8 +78,10 @@ private:
         0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
         0xF0, 0x80, 0xF0, 0x80, 0x80  // F
     };
-    uint8_t* m_buffer;
-    size_t m_size;
+    uint8_t* m_memory;
+    uint8_t* m_registers;
+    std::unique_ptr<SpecialRegisters> m_specialRegisters;
+    uint16_t* m_stack;
 
-    void LoadHexSpritesIntoMemory(void);
+
 };

@@ -7,8 +7,8 @@ add_executable(chip8
 )
 
 add_library(chip8-lib STATIC
-    "src/Chip8MemoryMap.h"
-    "src/Chip8MemoryMap.cpp"
+    "src/Chip8Interpreter.h"
+    "src/Chip8Interpreter.cpp"
 )
 
 target_link_libraries(chip8 chip8-lib)
@@ -24,7 +24,7 @@ install(
 ###################################
 
 add_executable(chip8-test
-  "tests/Chip8MemoryMapTests.cpp"
+  "tests/Chip8InterpreterTests.cpp"
 )
 
 target_link_libraries(chip8-test chip8-lib gtest gtest_main)
