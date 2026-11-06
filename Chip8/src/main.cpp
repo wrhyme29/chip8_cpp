@@ -77,10 +77,9 @@ int main() {
         0xd015, // Draw Sprite
         0x00FD  // Exit
   };
-
+  interpreter->SetRenderer(render_screen);
   interpreter->LoadProgramIntoMemory(program, sizeof program);
   interpreter->ExecuteProgram();
-  render_screen(interpreter->GetScreen());
-
+  
   return 0;
 }

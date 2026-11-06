@@ -31,6 +31,14 @@ Chip8Interpreter::~Chip8Interpreter()
     delete[] m_memory;
 }
 
+void ProcessInstruction(uint8_t word1, uint8_t word2, uint8_t word3, uint8_t word4)
+{
+ // TODO: Move the switch case for processing a word into here
+ //       This will then allow 2 key things:
+ //         1) The unit testing of certain instructions being processed correctly
+ //         2) The interleaving of the program execution and screen rendering 
+}
+
 void Chip8Interpreter::ExecuteProgram()
 {
     uint8_t words[4];
@@ -162,6 +170,8 @@ void Chip8Interpreter::ExecuteProgram()
                 }
                 break;
         }
+        
+        if(m_renderCallback != nullptr) m_renderCallback(m_screen);
     }
 }
 
@@ -223,4 +233,9 @@ void Chip8Interpreter::SetRegisterI(uint16_t memoryAddress)
 {
     assert(memoryAddress <= address_boundaries::RAM_END);
     m_specialRegisters->I = memoryAddress;
+}
+
+void Chip8Interpreter::SetRenderer(std::function<void(bool**)> renderCallback)
+{
+    m_renderCallback = renderCallback;
 }
