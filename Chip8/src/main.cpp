@@ -31,6 +31,7 @@ void render_bit(bool bit)
 
 void render_screen(bool** screen)
 {
+  printf("\n");
   for(int x=0; x < CHIP8_SCREEN_HEIGHT; ++x)
   {
     for(int y=0; y < CHIP8_SCREEN_WIDTH; ++y)
@@ -39,6 +40,7 @@ void render_screen(bool** screen)
     }
     printf("\n");
   }
+  printf("\n");
 }
 
 void render_sprite(uint8_t* sprite)
@@ -80,6 +82,6 @@ int main() {
   interpreter->SetRenderer(render_screen);
   interpreter->LoadProgramIntoMemory(program, sizeof program);
   interpreter->ExecuteProgram();
-  
+
   return 0;
 }

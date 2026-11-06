@@ -25,21 +25,6 @@ public:
 
     struct SpecialRegisters
     {
-        uint8_t  V1;
-        uint8_t  V2;
-        uint8_t  V3;
-        uint8_t  V4;
-        uint8_t  V5;
-        uint8_t  V6;
-        uint8_t  V7;
-        uint8_t  V8;
-        uint8_t  V9;
-        uint8_t  VA;
-        uint8_t  VB;
-        uint8_t  VC;
-        uint8_t  VD;
-        uint8_t  VE;
-        uint8_t  VF;
         uint16_t I;
         uint8_t  DT;
         uint8_t  ST;
@@ -88,7 +73,10 @@ private:
     uint8_t* m_memory;
     uint8_t* m_registers;
     std::unique_ptr<SpecialRegisters> m_specialRegisters;
+    bool m_exit;
     uint16_t* m_stack;
+    uint16_t m_programCounter;
+    uint8_t m_stackPointer;
     bool** m_screen;
     std::function<void(bool**)> m_renderCallback;
 };
