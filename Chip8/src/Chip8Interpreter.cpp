@@ -10,10 +10,10 @@ Chip8Interpreter::Chip8Interpreter()
     m_specialRegisters = std::make_unique<SpecialRegisters>();
     m_stack = new uint16_t[CHIP8_STACK_ADDRESS_COUNT];
     LoadProgramIntoMemory(c_hexSprites, sizeof c_hexSprites, address_boundaries::RAM_START);
-    m_screen = new uint8_t*[CHIP8_SCREEN_WIDTH];
+    m_screen = new bool*[CHIP8_SCREEN_WIDTH];
     for(int i = 0; i < CHIP8_SCREEN_WIDTH; ++i)
     {
-        m_screen[i] = new uint8_t[CHIP8_SCREEN_HEIGHT];
+        m_screen[i] = new bool[CHIP8_SCREEN_HEIGHT];
     }
 
 }
@@ -37,6 +37,7 @@ void Chip8Interpreter::ExecuteProgram()
     uint16_t result;
     uint8_t byte, x_coord, y_coord, mask;
     uint16_t program_counter = address_boundaries::PROGRAM_START;
+    bool pixel;
     while(true)
     {
         words[0] = m_memory[program_counter + 0];
@@ -136,18 +137,19 @@ void Chip8Interpreter::ExecuteProgram()
                 m_registers[0xf] = 0x0;
                 for(int i=0; i < words[3]; ++i)
                 {
-                    x_coord = (m_registers[words[1]]) % CHIP8_SCREEN_WIDTH;
-                    y_coord = (m_registers[words[2]] + i) % CHIP8_SCREEN_HEIGHT;
                     byte = m_memory[m_specialRegisters->I + i];
                     for(int j=0; j < 8; ++j)
                     {
+                        x_coord = (m_registers[words[1]] + 8 - j) % CHIP8_SCREEN_WIDTH;
+                        y_coord = (m_registers[words[2]] + i) % CHIP8_SCREEN_HEIGHT;
                         mask = 0x1 << j;
-                        if((m_screen[x_coord + j][y_coord]) && !(byte & mask))
+                        if((m_screen[x_coord][y_coord]) && !(byte & mask))
                         {
                             m_registers[0xf] = 0x1;
                         } 
-    
-                        m_screen[x_coord + j][y_coord] = m_screen[x_coord + j][y_coord] ^ (byte & mask);
+
+                        pixel = m_screen[x_coord][y_coord] ^ (byte & mask);
+                        m_screen[x_coord][y_coord] = pixel;
                     }
                 }
                 break;
@@ -162,6 +164,7 @@ void Chip8Interpreter::ExecuteProgram()
         }
     }
 }
+
 
 uint8_t* Chip8Interpreter::GetHexSprite(uint8_t hexChar)
 {
@@ -183,7 +186,7 @@ uint8_t Chip8Interpreter::GetRegistryValue(uint8_t registerName)
     return m_registers[registerName];
 }
 
-uint8_t** Chip8Interpreter::GetScreen()
+bool** Chip8Interpreter::GetScreen()
 {
     return m_screen;
 }

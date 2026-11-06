@@ -18,13 +18,24 @@ void render_byte(uint8_t byteToRender)
     }
 }
 
-void render_screen(uint8_t** screen)
+void render_bit(bool bit)
 {
-  for(int x=0; x < CHIP8_SCREEN_WIDTH; ++x)
+      if(bit)
+      {
+        printf("#");
+      } else
+      {
+        printf(".");
+      }
+}
+
+void render_screen(bool** screen)
+{
+  for(int x=0; x < CHIP8_SCREEN_HEIGHT; ++x)
   {
-    for(int y=0; y < CHIP8_SCREEN_HEIGHT; ++y)
+    for(int y=0; y < CHIP8_SCREEN_WIDTH; ++y)
     {
-      render_byte(screen[x][y]);
+      render_bit(screen[y][x]);
     }
     printf("\n");
   }
@@ -54,14 +65,14 @@ int main() {
 
   uint16_t program[12] = {
         0x00e0, // Clear the Screen
-        0x6003, // Set x coord
-        0x6103, // Set y coord
+        0x6005, // Set x coord
+        0x6109, // Set y coord
         0x6206, // Load V2 with digit to draw
         0xf229, // Point I to the font for the digit to draw
         0xd015, // Draw Sprite
-        0x6005, // Set x coord
-        0x6103, // Set y coord
-        0x6207, // Load V2 with digit to draw
+        0x600c, // Set x coord
+        0x610c, // Set y coord
+        0x6209, // Load V2 with digit to draw
         0xf229, // Point I to the font for the digit to draw
         0xd015, // Draw Sprite
         0x00FD  // Exit
