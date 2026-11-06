@@ -5,18 +5,29 @@
 
 void render_byte(uint8_t byteToRender)
 {
-    uint8_t updatedByteToRender = byteToRender >> 4;
-    uint8_t masks[4] = {8, 4, 2, 1};
-    for(uint8_t i=0; i < 4; ++i)
+    uint8_t masks[8] = {0x80, 0x40, 0x20, 0x10, 0x8, 0x04, 0x02, 0x01};
+    for(uint8_t i=0; i < 8; ++i)
     {
-      if(updatedByteToRender & masks[i])
+      if(byteToRender & masks[i])
       {
-        printf("*");
+        printf("#");
       } else
       {
-        printf(" ");
+        printf(".");
       }
     }
+}
+
+void render_screen(uint8_t** screen)
+{
+  for(int x=0; x < CHIP8_SCREEN_WIDTH; ++x)
+  {
+    for(int y=0; y < CHIP8_SCREEN_HEIGHT; ++y)
+    {
+      render_byte(screen[x][y]);
+    }
+    printf("\n");
+  }
 }
 
 void render_sprite(uint8_t* sprite)
@@ -31,15 +42,34 @@ void render_sprite(uint8_t* sprite)
 int main() {
   std::unique_ptr<Chip8Interpreter> interpreter = std::make_unique<Chip8Interpreter>();
     
-  std::printf("Constructed Chip8MemoryMap with size of %zu bytes\n", sizeof(*interpreter));
+  // std::printf("Constructed Chip8MemoryMap with size of %zu bytes\n", sizeof(*interpreter));
 
-  uint8_t* sprite;
-  for(uint8_t i=0; i < 16; ++i)
-  {
-    sprite = interpreter->GetHexSprite(i);
-    render_sprite(sprite);
-    printf("\n");
-  }
-    
+  // uint8_t* sprite;
+  // for(uint8_t i=0; i < 16; ++i)
+  // {
+  //   sprite = interpreter->GetHexSprite(i);
+  //   render_sprite(sprite);
+  //   printf("\n");
+  // }
+
+  uint16_t program[12] = {
+        0x00e0, // Clear the Screen
+        0x6003, // Set x coord
+        0x6103, // Set y coord
+        0x6206, // Load V2 with digit to draw
+        0xf229, // Point I to the font for the digit to draw
+        0xd015, // Draw Sprite
+        0x6005, // Set x coord
+        0x6103, // Set y coord
+        0x6207, // Load V2 with digit to draw
+        0xf229, // Point I to the font for the digit to draw
+        0xd015, // Draw Sprite
+        0x00FD  // Exit
+  };
+
+  interpreter->LoadProgramIntoMemory(program, sizeof program);
+  interpreter->ExecuteProgram();
+  render_screen(interpreter->GetScreen());
+
   return 0;
 }

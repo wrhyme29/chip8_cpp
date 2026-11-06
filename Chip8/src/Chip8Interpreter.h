@@ -4,8 +4,11 @@
 
 #define CHIP8_RAM_SIZE_BYTES 4096
 #define CHIP8_HEX_SPRITE_SIZE_BYTES 5
+#define CHIP8_SPRITE_WIDTH_PX 8
 #define CHIP8_STACK_ADDRESS_COUNT 16
 #define CHIP8_REGISTERS_COUNT 16
+#define CHIP8_SCREEN_WIDTH 8
+#define CHIP8_SCREEN_HEIGHT 4
 
 class Chip8Interpreter
 {
@@ -53,6 +56,7 @@ public:
     uint8_t* GetHexSprite(uint8_t hexChar);
     void LoadProgramIntoMemory(const uint16_t* program, uint16_t size);
     uint8_t GetRegistryValue(uint8_t registerName);
+    uint8_t** GetScreen(void);
     void SetRegisterI(uint16_t memoryAddress);
 
 private:
@@ -82,6 +86,7 @@ private:
     uint8_t* m_registers;
     std::unique_ptr<SpecialRegisters> m_specialRegisters;
     uint16_t* m_stack;
+    uint8_t** m_screen;
 
 
 };

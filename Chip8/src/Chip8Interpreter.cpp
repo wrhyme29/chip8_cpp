@@ -10,11 +10,22 @@ Chip8Interpreter::Chip8Interpreter()
     m_specialRegisters = std::make_unique<SpecialRegisters>();
     m_stack = new uint16_t[CHIP8_STACK_ADDRESS_COUNT];
     LoadProgramIntoMemory(c_hexSprites, sizeof c_hexSprites, address_boundaries::RAM_START);
+    m_screen = new uint8_t*[CHIP8_SCREEN_WIDTH];
+    for(int i = 0; i < CHIP8_SCREEN_WIDTH; ++i)
+    {
+        m_screen[i] = new uint8_t[CHIP8_SCREEN_HEIGHT];
+    }
+
 }
 
 // Following RAII, deallocate the buffers on destruction
 Chip8Interpreter::~Chip8Interpreter()
 {
+    for(int i = 0; i < CHIP8_SCREEN_WIDTH; ++i)
+    {
+        delete[] m_screen[i];
+    }
+    delete[] m_screen;
     delete[] m_stack;
     delete[] m_registers;
     delete[] m_memory;
@@ -24,6 +35,7 @@ void Chip8Interpreter::ExecuteProgram()
 {
     uint8_t words[4];
     uint16_t result;
+    uint8_t byte, x_coord, y_coord, mask;
     uint16_t program_counter = address_boundaries::PROGRAM_START;
     while(true)
     {
@@ -36,8 +48,30 @@ void Chip8Interpreter::ExecuteProgram()
         switch(words[0])
         {
             case 0x0:
+                // 0x00E0 is Clear the display
+                if( words[1] == 0x0 && words[2] == 0xe && words[3] == 0x0)
+                {
+                    for(int x=0; x < CHIP8_SCREEN_WIDTH; ++x)
+                    {
+                        for(int y=0; y < CHIP8_SCREEN_HEIGHT; ++y)
+                        {
+                            m_screen[x][y] = static_cast<uint8_t>(0x0);
+                        }
+                    }
+                }
                 // 0x00FD is EXIT
                 if( words[1] == 0x0 && words[2] == 0xf && words[3] == 0xd) return;
+                break;
+            case 0x1:
+                // 0x1nnn is Jump to location nnn
+                program_counter = static_cast<uint16_t>((words[1] << 8) + (words[2] << 4) + words[3]);
+                break;
+            case 0x3:
+                // 0x3xkk is Skip next instruction if Vx = kk.
+                if(m_registers[words[1]] == static_cast<uint8_t>((words[2] << 4) + words[3]))
+                {
+                    program_counter += 4;
+                }
                 break;
             case 0x6:
                 // 0x6xkk is Load kk into Vx          
@@ -89,7 +123,42 @@ void Chip8Interpreter::ExecuteProgram()
                         break;
                 }
                 break;
+            case 0xa:
+                // 0xannn is Set I to nnn
+                m_specialRegisters->I = static_cast<uint16_t>((words[1] << 8) + (words[2] << 4) + words[3]);
+                break;
+            case 0xb:
+                // 0xbnnn is Jump to location nnn + V0.
+                program_counter = static_cast<uint16_t>(m_registers[0x0] + static_cast<uint16_t>((words[1] << 8) + (words[2] << 4) + words[3]));
+                break;
+            case 0xd:
+                // 0xdxyn is Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
+                m_registers[0xf] = 0x0;
+                for(int i=0; i < words[3]; ++i)
+                {
+                    x_coord = (m_registers[words[1]]) % CHIP8_SCREEN_WIDTH;
+                    y_coord = (m_registers[words[2]] + i) % CHIP8_SCREEN_HEIGHT;
+                    byte = m_memory[m_specialRegisters->I + i];
+                    for(int j=0; j < 8; ++j)
+                    {
+                        mask = 0x1 << j;
+                        if((m_screen[x_coord + j][y_coord]) && !(byte & mask))
+                        {
+                            m_registers[0xf] = 0x1;
+                        } 
+    
+                        m_screen[x_coord + j][y_coord] = m_screen[x_coord + j][y_coord] ^ (byte & mask);
+                    }
+                }
+                break;
 
+            case 0xf:
+                // 0xfx29 is Set I to location of sprite for digit Vx
+                if(words[2] == 0x2 && words[3] == 0x9)
+                {
+                    m_specialRegisters->I = static_cast<uint16_t>(address_boundaries::RAM_START + m_registers[words[1]] * CHIP8_HEX_SPRITE_SIZE_BYTES);
+                }
+                break;
         }
     }
 }
@@ -97,12 +166,12 @@ void Chip8Interpreter::ExecuteProgram()
 uint8_t* Chip8Interpreter::GetHexSprite(uint8_t hexChar)
 {
     assert(hexChar < 0x10);
-    uint8_t* hexSprite = new uint8_t[5];
+    uint8_t* hexSprite = new uint8_t[CHIP8_HEX_SPRITE_SIZE_BYTES];
 
     uint16_t memIndex;
-    for(uint8_t i=0; i < 5; ++i)
+    for(uint8_t i=0; i < CHIP8_HEX_SPRITE_SIZE_BYTES; ++i)
     {
-        memIndex = address_boundaries::RAM_START + hexChar * 5 + i;
+        memIndex = address_boundaries::RAM_START + hexChar * CHIP8_HEX_SPRITE_SIZE_BYTES + i;
         hexSprite[i] = m_memory[memIndex];
     }
 
@@ -112,6 +181,11 @@ uint8_t* Chip8Interpreter::GetHexSprite(uint8_t hexChar)
 uint8_t Chip8Interpreter::GetRegistryValue(uint8_t registerName)
 {
     return m_registers[registerName];
+}
+
+uint8_t** Chip8Interpreter::GetScreen()
+{
+    return m_screen;
 }
 
 void Chip8Interpreter::LoadProgramIntoMemory(const uint16_t* program, uint16_t size)
