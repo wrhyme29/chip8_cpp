@@ -123,3 +123,28 @@ TEST(Chip8InterpreterTests, SimpleAddingSubroutineProgram)
     EXPECT_EQ(m_chip8Interpreter->GetRegistryValue(0x0), (uint8_t) 0x32);
     EXPECT_EQ(m_chip8Interpreter->GetRegistryValue(0xf), (uint8_t) 0x00);
 }
+
+TEST(Chip8InterpreterTests, SimplFibonacciProgram)
+{
+     uint16_t program[23] = {
+        0x120a, // Jump to 0x20a
+        0x8200, // Set V2 to V0
+        0x8014, // Add V0 to V1
+        0x8120, // Set V1 to V2
+        0x00ee, // Return from subroutine
+        0x6001, // Load V0 with 0x20
+        0x6101, // Load V1 with 0x12
+        0x6300, // Load V3 with 0x00
+        0x2202, // Call subroutine at 0x202 -- start loop
+        0x7301, // Add 0x01 to V3
+        0x3305, // Skip next if V3 == 0x05 -- loop condition
+        0x1210, // Jump to 0x210 -- end loop
+        0x00fd  // Exit
+    };
+    std::unique_ptr<Chip8Interpreter> m_chip8Interpreter = std::make_unique<Chip8Interpreter>();
+    m_chip8Interpreter->LoadProgramIntoMemory(program, sizeof program);
+    m_chip8Interpreter->ExecuteProgram();
+    EXPECT_EQ(m_chip8Interpreter->GetRegistryValue(0x0), (uint8_t) 0x0d);
+}
+
+

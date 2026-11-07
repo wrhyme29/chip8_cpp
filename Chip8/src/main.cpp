@@ -81,31 +81,54 @@ int main() {
   // };
 
   // draw_faces.ch8
-   uint16_t program[23] = {
-        0x1224, // jump to 0x224
-        0xff81, // sprite data
-        0xa581, // sprite data
-        0xbd81, // sprite data
-        0xffff, // sprite data
-        0x81e7, // sprite data
-        0x8181, // sprite data
-        0x99ff, // sprite data
-        0xa202, // Set I to 0x202 - start subroutine
-        0xd017, // Draw 7 byte sprite at (0, 1)
-        0x7009, // Add 9 to register V0
-        0x7102, // Add 2 to register V1
-        0x00ee, // Return from subroutine
-        0xa209, // Set I to 0x209 - start subroutine
-        0xd017, // Draw 7 byte sprite at (0, 1)
-        0x7009, // Add 9 to register V0
-        0x7102, // Add 2 to register V1
-        0x00ee, // Return from subroutine
-        0x2210, // Call subroutine at 0x210
-        0x2210, // Call subroutine at 0x210
-        0x221a, // Call subroutine at 0x21a
-        0x2210, // Call subroutine at 0x2210
-        0x00FD  // Exit
-    };
+  //  uint16_t program[23] = {
+  //       0x1224, // jump to 0x224
+  //       0xff81, // sprite data
+  //       0xa581, // sprite data
+  //       0xbd81, // sprite data
+  //       0xffff, // sprite data
+  //       0x81e7, // sprite data
+  //       0x8181, // sprite data
+  //       0x99ff, // sprite data
+  //       0xa202, // Set I to 0x202 - start subroutine
+  //       0xd017, // Draw 7 byte sprite at (0, 1)
+  //       0x7009, // Add 9 to register V0
+  //       0x7102, // Add 2 to register V1
+  //       0x00ee, // Return from subroutine
+  //       0xa209, // Set I to 0x209 - start subroutine
+  //       0xd017, // Draw 7 byte sprite at (0, 1)
+  //       0x7009, // Add 9 to register V0
+  //       0x7102, // Add 2 to register V1
+  //       0x00ee, // Return from subroutine
+  //       0x2210, // Call subroutine at 0x210
+  //       0x2210, // Call subroutine at 0x210
+  //       0x221a, // Call subroutine at 0x21a
+  //       0x2210, // Call subroutine at 0x210
+  //       0x00FD  // Exit
+  //   };
+
+  // ball_moving.ch8
+  uint16_t program[19] {
+      0x120a, // Jump to 0x20a
+      0x3c7a, // start sprite data
+      0xfdff,
+      0xffff,
+      0x7e3c, // end sprite data
+      0xa202, // Set I to 0x202
+      0x6a20, // Set Va to 0x20
+      0x6b0c, // Set Vb to 0x0c
+      0x6d01, // Set Vd to 0x01
+      0x00e0, // Clear the screen - start loop
+      0xdab8, // Draw 8 byte sprite at (0xa, 0xb)
+      0x7a01, // Set Va to Va + 1
+      0x8bd4, // Set Vb to Vb + Vd
+      0x4b18, // Skip next if Vb != 0x18
+      0x6dff, // Set Vd to 0xff
+      0x4b00, // Skip next if Vb != 0x0
+      0x6d01, // Set Vd to 0x01
+      0x1212, // jump to loop start at 0x212
+      0x00fd, // Exit
+  };
   interpreter->SetRenderer(render_screen);
   interpreter->LoadProgramIntoMemory(program, sizeof program);
   interpreter->ExecuteProgram();

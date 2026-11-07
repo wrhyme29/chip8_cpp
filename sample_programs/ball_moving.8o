@@ -1,0 +1,18 @@
+: ball
+	0x3C 0x7A 0xFD 0xFF 0xFF 0xFF 0x7E 0x3C
+
+: main
+	i  := ball
+	va := 32 # the ball's horizontal position
+	vb := 12 # the ball's vertical position
+	vd :=  1 # the ball's vertical direction
+
+	loop
+		clear
+		sprite va vb 8
+
+		va += 1
+		vb += vd
+		if vb == 24 then vd := 255
+		if vb ==  0 then vd :=   1
+	again

@@ -82,14 +82,14 @@ void Chip8Interpreter::ProcessInstruction(uint8_t word1, uint8_t word2, uint8_t 
                 // 0x3xkk is Skip next instruction if Vx = kk.
                 if(m_registers[word2] == static_cast<uint8_t>((word3 << 4) + word4))
                 {
-                    m_programCounter += 4;
+                    m_programCounter += 2;
                 }
                 break;
             case 0x4:
                 // 0x4xkk is Skip next instruction if Vx != kk.
                 if(m_registers[word2] != static_cast<uint8_t>((word3 << 4) + word4))
                 {
-                    m_programCounter += 4;
+                    m_programCounter += 2;
                 }
                 break;
             case 0x5:
@@ -98,7 +98,7 @@ void Chip8Interpreter::ProcessInstruction(uint8_t word1, uint8_t word2, uint8_t 
                 {
                     if(m_registers[word2] == m_registers[word3])
                     {
-                        m_programCounter += 4;
+                        m_programCounter += 2;
                     }
                 }
                 break;
@@ -113,6 +113,10 @@ void Chip8Interpreter::ProcessInstruction(uint8_t word1, uint8_t word2, uint8_t 
             case 0x8:
                 switch(word4)
                 {
+                    case 0x0:
+                        // 0x8xy0 is Set Vx = Vy.
+                        m_registers[word2] = m_registers[word3];
+                        break;
                     case 0x4:
                         // 0x8xy4 is Set Vx = Vx + Vy, set VF = carry.
                         result = m_registers[word2] + m_registers[word3];
@@ -150,6 +154,9 @@ void Chip8Interpreter::ProcessInstruction(uint8_t word1, uint8_t word2, uint8_t 
                             m_registers[0xf]      = static_cast<uint8_t>(0x0);
                         }
                         break;
+                    default:
+                        printf("Unsupported word: 0x8xy%1x\n", word4);
+                        break;
                 }
                 break;
             case 0x9:
@@ -158,7 +165,7 @@ void Chip8Interpreter::ProcessInstruction(uint8_t word1, uint8_t word2, uint8_t 
                 {
                     if(m_registers[word2] != m_registers[word3])
                     {
-                        m_programCounter += 4;
+                        m_programCounter += 2;
                     }
                 }
                 break;
