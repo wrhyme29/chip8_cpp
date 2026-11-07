@@ -1,0 +1,26 @@
+: image1
+	0xFF 0x81 0xA5 0x81 0xBD 0x81 0xFF
+
+: image2
+	0xFF 0x81 0xE7 0x81 0x81 0x99 0xFF
+
+: draw1
+	i := image1
+	sprite v0 v1 7
+	v0 += 9
+	v1 += 2
+;
+
+: draw2
+	i := image2
+	sprite v0 v1 7
+	v0 += 9
+	v1 += 2
+;
+
+: main
+	draw1
+	draw1
+	draw2
+	draw1
+

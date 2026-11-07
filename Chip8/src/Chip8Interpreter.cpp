@@ -59,10 +59,9 @@ void Chip8Interpreter::ProcessInstruction(uint8_t word1, uint8_t word2, uint8_t 
                 // 0x00ee is Return from a subroutine.
                 if( word2 == 0x0 && word3 == 0xe && word4 == 0xe)
                 {
-                    m_programCounter = m_stack[m_stackPointer];
-                    // TODO: Should there be an assert that we haven't gone out of bounds?
-                    m_stackPointer--;
-
+                    // Check against stack underflow
+                    assert(m_stackPointer > 0);
+                    m_programCounter = m_stack[--m_stackPointer];
                 }
                 // 0x00FD is EXIT
                 if( word2 == 0x0 && word3 == 0xf && word4 == 0xd) m_exit = true;
@@ -73,9 +72,10 @@ void Chip8Interpreter::ProcessInstruction(uint8_t word1, uint8_t word2, uint8_t 
                 break;
             case 0x2:
                 // 0x2nnn is Call subroutine at nnn.
-                m_stack[m_stackPointer] = m_programCounter;
-                // TODO: Should there be an assert that the stack hasn't exceeded bounds?
-                m_stackPointer++;
+
+                // Check against stack overflow
+                assert(m_stackPointer < CHIP8_STACK_ADDRESS_COUNT);
+                m_stack[m_stackPointer++] = m_programCounter;
                 m_programCounter = static_cast<uint16_t>((word2 << 8) + (word3 << 4) + word4);
                 break;
             case 0x3:
@@ -233,11 +233,13 @@ void Chip8Interpreter::ExecuteProgram()
 
     while(!m_exit)
     {
-        words[0] = m_memory[m_programCounter + 0];
-        words[1] = m_memory[m_programCounter + 1];
-        words[2] = m_memory[m_programCounter + 2];
-        words[3] = m_memory[m_programCounter + 3];
-        m_programCounter += 4;
+        words[0] = (m_memory[m_programCounter + 0] & 0xf0) >> 4;
+        words[1] = (m_memory[m_programCounter + 0] & 0x0f) >> 0;
+        words[2] = (m_memory[m_programCounter + 1] & 0xf0) >> 4;
+        words[3] = (m_memory[m_programCounter + 1] & 0x0f) >> 0;
+
+        printf("%04x: %01x %01x %01x %01x\n", m_programCounter, words[0], words[1], words[2], words[3]);
+        m_programCounter += 2;
 
         ProcessInstruction(words[0], words[1], words[2], words[3]);
         if(m_renderCallback != nullptr) m_renderCallback(m_screen);
@@ -275,15 +277,13 @@ void Chip8Interpreter::LoadProgramIntoMemory(const uint16_t* program, uint16_t s
     uint8_t words[4];
     for(int i=0; i < size; ++i)
     {
-        words[0] = (program[i] & 0xf000) >> 12;
-        words[1] = (program[i] & 0x0f00) >> 8;
-        words[2] = (program[i] & 0x00f0) >> 4;
-        words[3] = (program[i] & 0x000f) >> 0;
+        words[0] = (program[i] & 0xff00) >> 8;
+        words[1] = (program[i] & 0x00ff) >> 0;
 
 
-        for(int j=0; j < 4; ++j)
+        for(int j=0; j < 2; ++j)
         {
-            m_memory[address_boundaries::PROGRAM_START + i * 4 + j] = words[j];
+            m_memory[address_boundaries::PROGRAM_START + i * 2 + j] = words[j];
         }
     }
 }
