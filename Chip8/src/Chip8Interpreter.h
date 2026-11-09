@@ -1,7 +1,12 @@
+#ifndef CHIP8_INTERPRETER_H
+#define CHIP8_INTERPRETER_H
+
 #include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <memory>
+
+#include "Chip8Events.h"
 
 #define CHIP8_RAM_SIZE_BYTES 4096
 #define CHIP8_HEX_SPRITE_SIZE_BYTES 5
@@ -46,6 +51,7 @@ public:
     bool** GetScreen(void);
     void SetRegisterI(uint16_t memoryAddress);
     void SetRenderer(std::function<void(bool**)> renderCallback);
+    void SetEventPoller(std::function<void(Chip8Event*, size_t*)> eventPollCallback);
 
 private:
     void LoadProgramIntoMemory(const uint8_t* program, uint16_t size, uint16_t startMemoryAddress);
@@ -79,4 +85,7 @@ private:
     uint8_t m_stackPointer;
     bool** m_screen;
     std::function<void(bool**)> m_renderCallback;
+    std::function<void(Chip8Event*, size_t*)> m_eventPollCallback;
 };
+
+#endif // CHIP8_INTERPRETER_H

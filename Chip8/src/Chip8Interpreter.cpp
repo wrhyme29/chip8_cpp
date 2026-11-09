@@ -245,11 +245,29 @@ void Chip8Interpreter::ExecuteProgram()
         words[2] = (m_memory[m_programCounter + 1] & 0xf0) >> 4;
         words[3] = (m_memory[m_programCounter + 1] & 0x0f) >> 0;
 
-        printf("%04x: %01x %01x %01x %01x\n", m_programCounter, words[0], words[1], words[2], words[3]);
+        // printf("%04x: %01x %01x %01x %01x\n", m_programCounter, words[0], words[1], words[2], words[3]);
         m_programCounter += 2;
 
         ProcessInstruction(words[0], words[1], words[2], words[3]);
         if(m_renderCallback != nullptr) m_renderCallback(m_screen);
+        if(m_eventPollCallback != nullptr) 
+        {
+            size_t eventCount;
+            Chip8Event* events = new Chip8Event[255];
+            m_eventPollCallback(events, &eventCount);
+            for(size_t i=0; i < eventCount; ++i)
+            {
+                switch(events[i])
+                {
+                    case Chip8Event::EXIT:
+                        m_exit = true;
+                        break;
+                    default:
+                        printf("Unimplemented event found!\n");
+                        break;
+                }
+            }
+        }
     }
 }
 
@@ -314,4 +332,9 @@ void Chip8Interpreter::SetRegisterI(uint16_t memoryAddress)
 void Chip8Interpreter::SetRenderer(std::function<void(bool**)> renderCallback)
 {
     m_renderCallback = renderCallback;
+}
+
+void Chip8Interpreter::SetEventPoller(std::function<void(Chip8Event*, size_t*)> eventPollCallback)
+{
+    m_eventPollCallback = eventPollCallback;
 }

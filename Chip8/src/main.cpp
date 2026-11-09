@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "Chip8Interpreter.h"
+#include "Sdl2Renderer.h"
 
 void render_byte(uint8_t byteToRender)
 {
@@ -52,8 +53,10 @@ void render_sprite(uint8_t* sprite)
   }
 }
 
-int main() {
+int main(int argc, char** args) {
   std::unique_ptr<Chip8Interpreter> interpreter = std::make_unique<Chip8Interpreter>();
+  std::unique_ptr<Sdl2Renderer> sdl2_renderer = std::make_unique<Sdl2Renderer>(CHIP8_SCREEN_WIDTH, CHIP8_SCREEN_HEIGHT, 10, 60);
+  if(!sdl2_renderer->IsValid()) return 1;
     
   // std::printf("Constructed Chip8MemoryMap with size of %zu bytes\n", sizeof(*interpreter));
 
@@ -107,7 +110,7 @@ int main() {
   //       0x00FD  // Exit
   //   };
 
-  // ball_moving.ch8
+  // // ball_moving.ch8
   uint16_t program[19] {
       0x120a, // Jump to 0x20a
       0x3c7a, // start sprite data
@@ -129,9 +132,21 @@ int main() {
       0x1212, // jump to loop start at 0x212
       0x00fd, // Exit
   };
-  interpreter->SetRenderer(render_screen);
+
+  std::function<void(bool**)> renderer = [&sdl2_renderer](bool** screen) {
+        sdl2_renderer->RenderScreen(screen);
+    };
+
+  std::function<void(Chip8Event*, size_t*)> poller = [&sdl2_renderer](Chip8Event* events, size_t* count) {
+        sdl2_renderer->PollEvents(events, count);
+    };
+  
+  interpreter->SetRenderer(renderer);
+  interpreter->SetEventPoller(poller);
   interpreter->LoadProgramIntoMemory(program, sizeof program);
   interpreter->ExecuteProgram();
+
+  while(!sdl2_renderer->ShouldExit());
 
   return 0;
 }

@@ -11,4 +11,6 @@ RUN dnf install -y --nogpgcheck \
       rpmdevtools-9.5-1.el9 \
       vim-common-2:8.2.2637-26.el9_8.23 && \
     dnf clean all
+RUN --mount=target=/tmp/install_sdl2.sh,source=install_sdl2.sh \
+  /tmp/install_sdl2.sh
 ENTRYPOINT ['/bin/bash']
